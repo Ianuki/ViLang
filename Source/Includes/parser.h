@@ -1,6 +1,10 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#define CODE_BLOCK_STACK_SIZE 128
+
+#include <stdint.h>
+
 #include "lexer.h"
 
 typedef enum {
@@ -17,7 +21,14 @@ typedef struct ASTNode {
     };
 } ASTNode;
 
-void vl_parser_parse(Lexer* lexer);
+typedef struct {
+    size_t code_block_stack[CODE_BLOCK_STACK_SIZE];
+    size_t block_id;
+    uint8_t stack_pointer; /* uint8_t -> CODE_BLOCK_STACK_SIZE < 256 */
+} Parser;
+
+void vl_parser_init(Parser* parser);
+void vl_parser_parse(Parser* parser, Lexer* lexer);
 
 #endif
 

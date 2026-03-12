@@ -1,32 +1,26 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "Includes/parser.h"
-
-
-
+  
 char* read_file_to_string(const char* file_name) {
-    
-    FILE * file = fopen(argv[1], "rb");
+    FILE * file = fopen(file_name, "rb");
 
-    if (!file) {
-        printf("Failed to open file.");
-
-        return 1;
-    }
+    if (!file) { printf("Failed to open file."); return NULL; }
 
     fseek(file, 0, SEEK_END);
-    long size = ftell(file);
+    size_t size = ftell(file);
     rewind(file);
     
-    char * source_code = (char *)malloc(size + 1);
+    char* source_code = (char*)malloc(size + 1);
 
     if (source_code == NULL) {
         printf("Malloc error.");
         fclose(file);
 
-        return 1;
+        return NULL;
     }
 
     source_code[size] = (char)0;
@@ -38,10 +32,16 @@ char* read_file_to_string(const char* file_name) {
 }
 
 int main(int argc, char** argv) {
-    if (argc < 3) { printf("Missing arguments.\n"); return 1; }
+    if (argc < 2) { printf("Missing arguments.\n"); return 1; }
+
+    char* source_file_name = argv[1];
+    char* source_code = read_file_to_string(source_file_name);
 
     Lexer lexer;
-    vl_lexer_init(&lexer, "");
-    
-    vl_parser_parse(&lexer);
+    Parser parser;
+    vl_lexer_init(&lexer, source_code);
+    vl_parser_init(&parser);
+    vl_parser_parse(&parser, &lexer);
+
+    free(source_code);
 }

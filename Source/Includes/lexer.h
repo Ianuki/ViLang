@@ -19,8 +19,6 @@ typedef enum {
     TOKEN_END,
     TOKEN_IF,
     TOKEN_ASM,
-    TOKEN_MACRO,
-    TOKEN_LABEL,
     TOKEN_IMPORT,
 
     TOKEN_PLUS,

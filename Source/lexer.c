@@ -17,8 +17,6 @@ Keyword keywords[] = {
     {"end", TOKEN_END},
     {"asm", TOKEN_ASM},
     {"@import", TOKEN_IMPORT},
-    {"@macro", TOKEN_MACRO},
-    {"@label", TOKEN_LABEL},
 };
 
 #define KEYWORD_COUNT (sizeof(keywords) / sizeof(Keyword))
