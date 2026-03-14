@@ -14,21 +14,35 @@
 #include "Includes/lexer.h"
 #include "Includes/parser.h"
 #include "Includes/utilities.h"
+#include "Includes/errors.h"
 
-static void expect_token(Lexer* lexer, TokenType type) {
+static Token expect_token(Lexer* lexer, TokenType type) {
     Token token = vl_lexer_next(lexer);
     
     if (token.type != type) {
         printf("Parser error: expected '%s', got '%s'.\n", token_type_to_string(type), token_type_to_string(token.type));
-        
-        exit(1);
+        exit(ERR_EXPECTED_GOT);
     }
+
+    return token;
+}
+
+static Token seek_token(Lexer* lexer, TokenType type) {
+    Token current = vl_lexer_next(lexer);
+    for (current; current.type != type; current = vl_lexer_next(lexer)) {
+        if (current.type == TOKEN_EOF) {
+            printf("Parser error: reached EOF before finding token '%s'.", token_type_to_string(type));
+            exit(ERR_SEEK_FOUND_EOF);
+        }
+    }
+
+    return current;
 }
 
 static void enter_code_block(Parser* parser, CodeBlockType type) {
     if (parser->block_stack_pointer == CODE_BLOCK_STACK_SIZE) { /* Fix conflicts later (This check is absurdly idiotic) */
-        printf("Parser error: code block overflow.");
-        exit(1);
+        printf("Parser error: scope overflow.");
+        exit(ERR_SCOPE_OVERFLOW);
     }
 
     parser->code_block_stack[parser->block_stack_pointer++] = (CodeBlock){
@@ -39,14 +53,18 @@ static void enter_code_block(Parser* parser, CodeBlockType type) {
 
 static void leave_code_block(Parser* parser) {
     if (parser->block_stack_pointer == 0) { /* Same stupid check, Fix later */
-        printf("Parser error: code block underflow.");
-        exit(1);
+        printf("Parser error: scope underflow.");
+        exit(ERR_SCOPE_UNDERFLOW);
     }
 
     parser->block_stack_pointer--;
 }
 
-static void parse_push(Lexer* lexer) {
+static void parse_expression(Parser* parser, Lexer* lexer) {
+
+}
+
+static void parse_push(Parser* parser, Lexer* lexer) {
     Token identifier = vl_lexer_next(lexer);
     expect_token(lexer, TOKEN_COLON);
     Token type = vl_lexer_next(lexer);
@@ -61,7 +79,7 @@ static void parse_push(Lexer* lexer) {
     printf("\n");
 }
 
-static void parse_set(Lexer* lexer) {
+static void parse_set(Parser* parser, Lexer* lexer) {
     Token variable = vl_lexer_next(lexer);
     expect_token(lexer, TOKEN_EQ);
     Token value = vl_lexer_next(lexer);
@@ -76,19 +94,41 @@ static void parse_set(Lexer* lexer) {
     printf("\n");
 }
 
-static void parse_set(Lexer* lexer) {
-    Token variable = vl_lexer_next(lexer);
-    expect_token(lexer, TOKEN_EQ);
-    Token value = vl_lexer_next(lexer);
+static void parse_if(Parser* parser, Lexer* lexer) {
+    printf("If:\n");
+    printf("----[ Scope: %d\n", parser->block_id);
 
-    printf("Set:\n");
-    printf("----[ Variable: ");
-    for (int i = 0; i < variable.length; i++) printf("%c", variable.start[i]);
-    printf("\n");
+    expect_token(lexer, TOKEN_EOL);
 
-    printf("----[ Value: ");
-    for (int i = 0; i < value.length; i++) printf("%c", value.start[i]);
-    printf("\n");
+    enter_code_block(parser, BLOCK_IF);
+}
+
+static void parse_repeat(Parser* parser, Lexer* lexer) {
+    printf("Repeat:\n");
+    printf("----[ Scope: %d\n", parser->block_id);
+
+    expect_token(lexer, TOKEN_EOL);
+
+    enter_code_block(parser, BLOCK_REPEAT);
+}
+
+static void parse_asm(Parser* parser, Lexer* lexer) {
+    expect_token(lexer, TOKEN_LPAREN);
+
+    Token current = vl_lexer_next(lexer);
+
+    printf("Bullshit = %s\n", token_type_to_string(current.type));
+    for (current; current.type != TOKEN_RPAREN; current = vl_lexer_next(lexer)) {
+        if (current.type == TOKEN_STRING) {
+            printf("----[ %.*s\n", current.start, current.length);
+        }
+    }
+}
+
+static void parse_end(Parser* parser, Lexer* lexer) {
+    leave_code_block(parser);
+    printf("End:\n");
+    printf("----[ Scope: %d\n", parser->code_block_stack[parser->block_stack_pointer].id);
 }
 
 void vl_parser_init(Parser* parser) {
@@ -101,8 +141,12 @@ void vl_parser_parse(Parser* parser, Lexer* lexer) {
 
     while (current_token.type != TOKEN_EOF) {
         switch (current_token.type) {
-            case TOKEN_PUSH: parse_push(lexer); break;
-            case TOKEN_SET: parse_set(lexer); break;
+            case TOKEN_PUSH: parse_push(parser, lexer); break;
+            case TOKEN_SET: parse_set(parser, lexer); break;
+            case TOKEN_IF: parse_if(parser, lexer); break;
+            case TOKEN_END: parse_end(parser, lexer); break;
+            case TOKEN_REPEAT: parse_repeat(parser, lexer); break;
+            case TOKEN_ASM: parse_asm(parser, lexer); break;
         }
 
         current_token = vl_lexer_next(lexer);

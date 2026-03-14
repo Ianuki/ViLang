@@ -3,8 +3,10 @@ CXX = gcc
 SRCS = $(wildcard Source/*.c)
 
 build: $(SRCS)
-	mkdir Builds
-	$(CXX) $(CXXFLAGS) -o Builds/$@ $(SRCS) $(CXXLIBS)
+	$(CXX) $(CXXFLAGS) -o Builds/build.exe $(SRCS) $(CXXLIBS)
+
+local: $(SRCS)
+	$(CXX) $(CXXFLAGS) -o lbuild.exe $(SRCS) $(CXXLIBS)
 
 clean:
 	rm -f build

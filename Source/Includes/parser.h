@@ -8,7 +8,7 @@
 #include "lexer.h"
 
 typedef enum {
-    ARBITRARY, /* do -> end*/
+    BLOCK_ARBITRARY, /* do -> end*/
     BLOCK_FUNCTION,
     BLOCK_IF,
     BLOCK_REPEAT

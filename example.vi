@@ -1,3 +1,0 @@
-push length: U32; set length = 10
-push width: U32; set width = 20
-push area: U32; set area = width * length

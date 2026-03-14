@@ -1,8 +1,17 @@
+/* 
+
+    FIX THIS STUPID ASS LEXER ASAP
+    its breaking when i try to tokenize a string
+
+*/
+
 #include <ctype.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
+#include "Includes/errors.h"
 #include "Includes/lexer.h"
 
 Keyword keywords[] = {
@@ -74,8 +83,23 @@ static Token make_number(Lexer* lexer) {
     return token;
 }
 
+static Token make_string(Lexer* lexer) {
+    while (peek(lexer) != '"' && !is_at_end(lexer)) {
+        if (peek(lexer) == '\n') lexer->line++; advance(lexer);
+    }
+
+    if (is_at_end(lexer)) {
+        printf("Lexer error: open string.");
+        exit(ERR_UNCLOSED_STRING);
+    }
+
+    advance(lexer);
+
+    return make_token(lexer, TOKEN_STRING);
+}
+
 static Token check_keyword(Lexer* lexer) {
-    while (isalnum(peek(lexer)) || peek(lexer) == '_') advance(lexer);
+    while (isalnum(peek(lexer)) || peek(lexer) == '_' && !(peek(lexer) == '"')) advance(lexer);
 
     uint64_t length = (uint64_t)(lexer->current - lexer->start);
 
@@ -118,6 +142,7 @@ Token vl_lexer_next(Lexer* lexer) {
         case '-': return make_token(lexer, TOKEN_MINUS);
         case '*': return make_token(lexer, TOKEN_STAR);
         case '/': return make_token(lexer, TOKEN_SLASH);
+        case '"': printf("hehe"); return make_token(lexer, TOKEN_DQUOTE);
 
         case '=':
             if (match(lexer, '=')) return make_token(lexer, TOKEN_EQEQ);

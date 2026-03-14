@@ -9,6 +9,7 @@ typedef enum {
 
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
+    TOKEN_STRING,
 
     TOKEN_PUSH,
     TOKEN_SET,
@@ -34,7 +35,8 @@ typedef enum {
     TOKEN_RPAREN,
     TOKEN_LBRACKET,
     TOKEN_RBRACKET,
-    TOKEN_EXCL
+    TOKEN_EXCL,
+    TOKEN_DQUOTE
 } TokenType;
 
 typedef struct {

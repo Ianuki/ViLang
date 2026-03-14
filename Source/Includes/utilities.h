@@ -3,7 +3,7 @@
 
 #include "lexer.h"
 
-const char* token_type_to_string(TokenType type) {
+static const char* token_type_to_string(TokenType type) {
     switch (type) {
         case TOKEN_EOF: return "TOKEN_EOF";
         case TOKEN_EOL: return "TOKEN_EOL";
@@ -36,8 +36,12 @@ const char* token_type_to_string(TokenType type) {
     }
 }
 
-const char* token_to_string(Token token) {
-    printf("%.*s", (int)token.length, token.start);
+static void mem_println(int length, const char* buffer) {
+    printf("%.*s\n", length, buffer);
+}
+
+static void token_println(Token token) {
+    printf("%.*s\n", (int)token.length, token.start);
 }
 
 #endif
