@@ -22,7 +22,6 @@ typedef enum {
     TOKEN_END,
     TOKEN_IF,
     TOKEN_ASM,
-    TOKEN_IMPORT,
 
     TOKEN_PLUS,
     TOKEN_MINUS,

@@ -24,6 +24,7 @@ typedef enum {
     NODE_SET,
     NODE_ASSIGN,
     NODE_IDENTIFIER,
+    NODE_EXPRESSION
 } NodeType;
 
 typedef struct ASTNode {

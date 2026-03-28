@@ -45,15 +45,18 @@ static void enter_code_block(Parser* parser, CodeBlockType type) {
         exit(ERR_SCOPE_OVERFLOW);
     }
 
-    parser->code_block_stack[parser->block_stack_pointer++] = (CodeBlock){
-        .id = parser->block_id++, 
+    parser->block_stack_pointer++;
+    parser->block_id++;
+
+    parser->code_block_stack[parser->block_stack_pointer] = (CodeBlock){
+        .id = parser->block_id, 
         .type = type
     };
 }
 
 static int current_code_block(Parser* parser) {
-    if (parser->block_stack_pointer == 0) return -1; 
-    return (int)parser->code_block_stack[parser->block_stack_pointer - 1].id;
+    if (parser->block_stack_pointer == 0) return 0; 
+    return (int)parser->code_block_stack[parser->block_stack_pointer].id;
 }
 
 static void leave_code_block(Parser* parser) {
